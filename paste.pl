@@ -9,12 +9,12 @@ my $PASTES_PATH="pastes/";
 
 # return a random char
 sub randomchar {
-  return  chr(int(rand 26) + 96);
+  return  chr(int(rand 25) + ord('a'));
 }
 
 # create a random file path
 sub newpath {
-  my $path = "$PASTES_PATH/";
+  my $path = "$PASTES_PATH";
   for (my $i = 0; $i < $FILENAME_LENGTH; $i++) {
     $path .= randomchar;
   }
@@ -24,18 +24,27 @@ sub newpath {
 # fill the content of the page
 sub fill {
   if (param("paste")) {
-
     # write the content to a random file
-    my $path = newpath;
-    open FILE, '>', $path;
+		my $path;
+		do {
+			$path = newpath;
+		} while (-e $path);
+		
+    open FILE, '>', $path || 
+			return (h1("Internal error") . 
+			p("Error when opening $path : $!"));
     print FILE param("paste");
+		close FILE;
 
     # save the path to the file in the db
     my $db = DBI->connect("dbi:SQLite:dbname=$DBFILE","","",{AutoCommit => 0, PrintError => 1});
     # TODO: do that in one request only
     my $id = $db->do("select count (*) from pastes");
     $db->do("insert into pastes values ($id, '$path')");
+		# TODO: check errors
+		$db->commit();
     $db->disconnect();
+		# TODO: output something ?
   }
   else {
     # The paste page 
