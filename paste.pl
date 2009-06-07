@@ -6,6 +6,7 @@ use DBI;
 my $DBFILE = "paste.db";
 my $FILENAME_LENGTH=10;
 my $PASTES_PATH="pastes/";
+my $MODE="debug"; # debug or something else 
 
 # return a random char
 sub randomchar {
@@ -21,6 +22,19 @@ sub newpath {
   return $path;
 }
 
+# return an error message
+sub error { 
+  my $errtype = $_[0];
+  my $errmsg = $_[1];
+  if ($MODE eq "debug") {
+    return h1($errtype) . p($errmsg);
+  }
+  else {
+    return h1($errtype) . 
+      p("Return to debug mode if you want more informations about the errors");
+  }
+}
+
 # fill the content of the page
 sub fill {
   if (param("paste")) {
@@ -30,18 +44,22 @@ sub fill {
 			$path = newpath;
 		} while (-e $path);
 		
-    open FILE, '>', $path || 
-			return (h1("Internal error") . 
-			p("Error when opening $path : $!"));
+    open (FILE, '>', $path) or 
+      return error ("Internal error", "Error when opening $path : $!");
     print FILE param("paste");
 		close FILE;
 
     # save the path to the file in the db
-    my $db = DBI->connect("dbi:SQLite:dbname=$DBFILE","","",{AutoCommit => 0, PrintError => 1});
+    my $db = DBI->connect("dbi:SQLite:dbname=$DBFILE","","",
+                            {AutoCommit => 0, PrintError => 1});
     # TODO: do that in one request only
     my $id = $db->do("select count (*) from pastes");
-    $db->do("insert into pastes values ($id, '$path')");
-		# TODO: check errors
+    $db->do("insert into pastes values ($id, '$path', " . time  . ")");
+
+    if ($db->err) { 
+      return error("Internal error", $db->errstr);
+    } 
+
 		$db->commit();
     $db->disconnect();
 		# TODO: output something ?
