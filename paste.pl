@@ -31,7 +31,7 @@ sub error {
   }
   else {
     return h1($errtype) . 
-      p("Return to debug mode if you want more informations about the errors");
+      p("Return to debug mode if you want more informations about the errors (set \$MODE as \"debug\"). You are in \"$MODE\" mode.");
   }
 }
 
@@ -52,17 +52,47 @@ sub fill {
     # save the path to the file in the db
     my $db = DBI->connect("dbi:SQLite:dbname=$DBFILE","","",
                             {AutoCommit => 0, PrintError => 1});
-    # TODO: do that in one request only
-    my $id = $db->do("select count (*) from pastes");
-    $db->do("insert into pastes values ($id, '$path', " . time  . ")");
+    # TODO: do that in one request only and in a good way
+    my $id = $db->selectcol_arrayref("select count (*) from pastes", 
+                                     { Columns=>[1] });
+    my $id = @$id[0] + 1;
+    $db->do("insert into pastes values (" . $id . 
+             ", '$path', " . time  . ")");
 
     if ($db->err) { 
-      return error("Internal error", $db->errstr);
+      return error("Internal error", $db->errstr . " : $!");
     } 
 
 		$db->commit();
     $db->disconnect();
+    return p("Your paste is located at ") . a({href=>"$0?id=$id"});
 		# TODO: output something ?
+  }
+  # View a paste
+  # TODO not working
+  elsif (param("id")) {
+    if (int(param("id")) == 0) {
+      return error "Wrong ID","You asked a wrong ID : " . param("id");
+    }
+    my $db = DBI->connect("dbi:SQLite:dbname=$DBFILE","","",
+                            {AutoCommit => 0, PrintError => 1});
+    # TODO: do that in a good way
+    my $path = $db->selectcol_arrayref(
+                 "select path from pastes where id=" . param("id"), 
+                  { Columns=>[1] });
+    my $path = @$path[0];
+
+    if (not -e $path) {
+      return error "Wrong ID", "File doesn't exists : $path";
+    }
+    open (FILE, '<', $path) or 
+      return error "Internal Error", "File doesn't exists : $path : $!";
+    my $content = "<code>";
+    while (<FILE>) {
+      $content .= $_;
+    }
+    $content .= "</code>";
+    return $content;
   }
   else {
     # The paste page 
