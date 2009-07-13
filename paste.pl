@@ -1,10 +1,8 @@
 #!/usr/bin/env perl
 use strict;
 use CGI qw/:standard/;
-use DBI;
 use File::Basename;
 
-my $DBFILE="./paste.db";
 my $FILENAME_LENGTH=10;
 my $PASTES_PATH="pastes/";
 my $MODE="debug"; # debug or something else 
@@ -50,43 +48,17 @@ sub fill {
     print FILE param("paste");
 		close FILE;
 
-    # save the path to the file in the db
-    my $db = DBI->connect("dbi:SQLite:dbname=$DBFILE","","",
-                            {AutoCommit => 0, PrintError => 1});
-    # TODO: do that in one request only and in a good way
-    my $id = $db->selectcol_arrayref("select count (*) from pastes", 
-                                     { Columns=>[1] });
-    my $id = @$id[0] + 1;
-    $db->do("insert into pastes values (" . $id . 
-             ", '$path' , " . time  . ")");
-
-    if ($db->err) { 
-      return error("Internal error", $db->errstr . " : $!");
-    } 
-
-		$db->commit();
-    $db->disconnect();
     return p("Your paste is located " . 
-             a({href=>basename($0) . "?id=$id"}, "here"));
+             a({href=>basename($0) . "?id=". basename($path)}, "here"));
   }
   # View a paste
   elsif (param("id")) {
-    if (int(param("id")) == 0) {
-      return error "Wrong ID","You asked a wrong ID : " . param("id");
-    }
-    my $db = DBI->connect("dbi:SQLite:dbname=$DBFILE","","",
-                            {AutoCommit => 0, PrintError => 1});
-    # TODO: do that in a good way
-    my $path = $db->selectcol_arrayref(
-                 "select path from pastes where id=" . param("id"), 
-                  { Columns=>[1] });
-    my $path = @$path[0];
-
+	  my $path = $PASTES_PATH . param("id");
     if (not -e $path) {
       return error "Wrong ID", "File doesn't exists : $path";
     }
     open (FILE, '<', $path) or 
-      return error "Internal Error", "File doesn't exists : $path : $!";
+      return error "Internal Error", "Error when opening : $path : $!";
     my $content = "<code>";
     while (<FILE>) {
       $content .= $_;
