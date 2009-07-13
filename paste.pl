@@ -2,8 +2,9 @@
 use strict;
 use CGI qw/:standard/;
 use DBI;
+use File::Basename;
 
-my $DBFILE = "paste.db";
+my $DBFILE="./paste.db";
 my $FILENAME_LENGTH=10;
 my $PASTES_PATH="pastes/";
 my $MODE="debug"; # debug or something else 
@@ -57,7 +58,7 @@ sub fill {
                                      { Columns=>[1] });
     my $id = @$id[0] + 1;
     $db->do("insert into pastes values (" . $id . 
-             ", '$path', " . time  . ")");
+             ", '$path' , " . time  . ")");
 
     if ($db->err) { 
       return error("Internal error", $db->errstr . " : $!");
@@ -65,11 +66,10 @@ sub fill {
 
 		$db->commit();
     $db->disconnect();
-    return p("Your paste is located at ") . a({href=>"$0?id=$id"});
-		# TODO: output something ?
+    return p("Your paste is located " . 
+             a({href=>basename($0) . "?id=$id"}, "here"));
   }
   # View a paste
-  # TODO not working
   elsif (param("id")) {
     if (int(param("id")) == 0) {
       return error "Wrong ID","You asked a wrong ID : " . param("id");
