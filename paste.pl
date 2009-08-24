@@ -37,7 +37,7 @@ sub error {
 
 sub languagebox {
   my @languages = (new Syntax::Highlight::Engine::Kate())->languageList();
-  my $box = "<select name=\"hl\" size=\"" . scalar(@languages) . "\">\n";
+  my $box = "<select name=\"hl\" size=\"1\">\n";
   foreach my $lang (@languages) {
     $box .= "<option value=\"$lang\">$lang</option>\n";
   }
