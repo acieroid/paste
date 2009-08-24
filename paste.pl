@@ -2,7 +2,7 @@
 use strict;
 use CGI qw/:standard/;
 use File::Basename;
-use Syntax::Highlight::Engine::Kate;
+use VimHighlighting;
 
 my $FILENAME_LENGTH=10;
 my $PASTES_PATH="pastes/";
@@ -24,8 +24,7 @@ sub newpath {
 
 # return an error message
 sub error { 
-  my $errtype = $_[0];
-  my $errmsg = $_[1];
+  my ($errtype, $errmsg) = $_;
   if ($MODE eq "debug") {
     return h1($errtype) . p($errmsg);
   }
@@ -36,7 +35,7 @@ sub error {
 }
 
 sub languagebox {
-  my @languages = (new Syntax::Highlight::Engine::Kate())->languageList();
+  my @languages = languages();
   my $box = "<select name=\"hl\" size=\"1\">\n";
   foreach my $lang (@languages) {
     $box .= "<option value=\"$lang\">$lang</option>\n";
@@ -73,41 +72,9 @@ sub fill {
     while (<FILE>) {
       $content .= $_;
     }
-    if (param("hl")) {
-      my $hl = new Syntax::Highlight::Engine::Kate(
-        language => "Perl",
-        substitutions => {
-           "<" => "&lt;",
-           ">" => "&gt;",
-        },
-        format_table => {
-           Alert => ["<font color=\"#0000ff\">", "</font>"],
-           BaseN => ["<font color=\"#007f00\">", "</font>"],
-           BString => ["<font color=\"#c9a7ff\">", "</font>"],
-           Char => ["<font color=\"#ff00ff\">", "</font>"],
-           Comment => ["<font color=\"#7f7f7f\"><i>", "</i></font>"],
-           DataType => ["<font color=\"#0000ff\">", "</font>"],
-           DecVal => ["<font color=\"#00007f\">", "</font>"],
-           Error => ["<font color=\"#ff0000\"><b><i>", "</i></b></font>"],
-           Float => ["<font color=\"#00007f\">", "</font>"],
-           Function => ["<font color=\"#007f00\">", "</font>"],
-           IString => ["<font color=\"#ff0000\">", ""],
-           Keyword => ["<b>", "</b>"],
-           Normal => ["", ""],
-           Operator => ["<font color=\"#ffa500\">", "</font>"],
-           Others => ["<font color=\"#b03060\">", "</font>"],
-           RegionMarker => ["<font color=\"#96b9ff\"><i>", "</i></font>"],
-           Reserved => ["<font color=\"#9b30ff\"><b>", "</b></font>"],
-           String => ["<font color=\"#ff0000\">", "</font>"],
-           Variable => ["<font color=\"#0000ff\"><b>", "</b></font>"],
-           Warning => ["<font color=\"#0000ff\"><b><i>", "</b></i></font>"],
-        },
-      );
- 
-      if (grep { $_ eq param("hl") } $hl->languageList()) {
-        $hl->language(param("hl"));
-        $content = $hl->highlightText($content);
-      }
+    if (param("hl") 
+        and grep { $_ eq param("hl") } languages()) {
+      $content = highlight($content, param("hl"));
     }
     return "<pre><code>\n" . $content . "\n</pre></code>";
   }
@@ -126,7 +93,8 @@ sub fill {
 
 print
   header(-charset => "UTF-8") . 
-  start_html("Paste it §") .  
+  start_html(-title => "Paste it §", 
+             -style => "pasteit.css") .  
   h1("Paste it §") .
   fill . 
   end_html;
