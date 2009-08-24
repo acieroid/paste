@@ -94,7 +94,7 @@ sub fill {
 print
   header(-charset => "UTF-8") . 
   start_html(-title => "Paste it §", 
-             -style => "pasteit.css") .  
+             -style => "paste.css") .  
   h1("Paste it §") .
   fill . 
   end_html;
