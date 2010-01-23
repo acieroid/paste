@@ -2,11 +2,12 @@
 use strict;
 use CGI qw/:standard/;
 use File::Basename;
-use VimHighlighting;
+use KateHighlighting;
 
 my $FILENAME_LENGTH=10;
 my $PASTES_PATH="pastes/";
 my $MODE="debug"; # debug or something else 
+my $TITLE="Paste it §"
 
 # return a random char
 sub randomchar {
@@ -93,9 +94,9 @@ sub fill {
 
 print
   header(-charset => "UTF-8") . 
-  start_html(-title => "Paste it §", 
+  start_html(-title => $TITLE, 
              -style => "paste.css") .  
-  h1("Paste it §") .
+  h1($TITLE) .
   fill . 
   end_html;
 
