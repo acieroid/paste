@@ -8,6 +8,7 @@ my $FILENAME_LENGTH=10;
 my $PASTES_PATH="pastes/";
 my $MODE="debug"; # debug or something else 
 my $TITLE="Paste it §";
+my $BASE_URL=basename($0);
 
 # return a random char
 sub randomchar {
@@ -66,7 +67,7 @@ sub fill {
     print FILE param("paste");
 		close FILE;
 
-    my $url = basename($0) . "?id=" . basename($path);
+    my $url = $BASE_URL . "?id=" . basename($path);
     $url .= "&hl=" . param("hl") if (not (param("no-hl") eq "on"));
     $url .= "&ne=t" if (param("no-escape") eq "on");
     return p("Your paste is located " . a({href=>$url}, "here"));
