@@ -35,14 +35,20 @@ sub error {
   }
 }
 
-sub languagebox {
+sub options_box {
+  # Languages
   my @languages = languages();
   my $box = "<select name=\"hl\" size=\"1\">\n";
   foreach my $lang (@languages) {
     $box .= "<option value=\"$lang\">$lang</option>\n";
   }
   $box .= "</select>\n";
+
+  # Disable highlight
   $box .= checkbox(-name=>'no-hl', -label=>"No highlighting ");
+  
+  # Disable html escaping
+  $box .= checkbox(-name=>'no-escape', -label=>"No html escaping");
   return $box;
 }
 
@@ -61,9 +67,8 @@ sub fill {
 		close FILE;
 
     my $url = basename($0) . "?id=" . basename($path);
-    if (not(param("no-hl") eq "on")) {
-      $url .= "&hl=" . param("hl");
-    }
+    $url .= "&hl=" . param("hl") if (not (param("no-hl") eq "on"));
+    $url .= "&ne=t" if (param("no-escape") eq "on");
     return p("Your paste is located " . a({href=>$url}, "here"));
   }
   # View a paste
@@ -76,7 +81,12 @@ sub fill {
       return error "Internal Error", "Error when opening : $path : $!";
     my $content;
     while (<FILE>) {
-      $content .= $_;
+      if (param "ne") {
+        $content .= $_;
+      }
+      else {
+        $content .= escapeHTML($_);
+      }
     }
     if (param("hl") 
         and grep { $_ eq param("hl") } languages()) {
@@ -91,7 +101,7 @@ sub fill {
                     -cols=>80, 
                     -rows=>20) .
            br . 
-           languagebox() .
+           options_box() .
            submit("Paste it §") .
            end_form();
   }
