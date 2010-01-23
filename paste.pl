@@ -7,7 +7,7 @@ use KateHighlighting;
 my $FILENAME_LENGTH=10;
 my $PASTES_PATH="pastes/";
 my $MODE="debug"; # debug or something else 
-my $TITLE="Paste it §"
+my $TITLE="Paste it §";
 
 # return a random char
 sub randomchar {
@@ -41,6 +41,8 @@ sub languagebox {
   foreach my $lang (@languages) {
     $box .= "<option value=\"$lang\">$lang</option>\n";
   }
+  $box .= "</select>\n";
+  $box .= checkbox(-name=>'no-hl', -label=>"No highlighting ");
   return $box;
 }
 
@@ -57,9 +59,12 @@ sub fill {
       return error ("Internal error", "Error when opening $path : $!");
     print FILE param("paste");
 		close FILE;
-    return p("Your paste is located " . 
-             a({href=>basename($0) . "?id=". basename($path) . "&hl=" .
-               param("hl")}, "here"));
+
+    my $url = basename($0) . "?id=" . basename($path);
+    if (not(param("no-hl") eq "on")) {
+      $url .= "&hl=" . param("hl");
+    }
+    return p("Your paste is located " . a({href=>$url}, "here"));
   }
   # View a paste
   elsif (param("id")) {
