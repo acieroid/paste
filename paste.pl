@@ -61,6 +61,17 @@ sub options_box {
   return $box;
 }
 
+sub language_found {
+  my ($lang) = @_;
+  my @languages = languages;
+  if (ref @languages[0] eq "ARRAY") {
+    return grep { @{$_}[1] eq $lang } languages();
+  }
+  else {
+    return grep { $_ eq $lang } languages()
+  }
+}
+
 # fill the content of the page
 sub fill {
   if (param("paste")) {
@@ -97,8 +108,7 @@ sub fill {
         $content .= escapeHTML($_);
       }
     }
-    if (param("hl") 
-        and grep { $_ eq param("hl") } languages()) {
+    if (param("hl") and language_found(param("hl"))) {
       $content = highlight($content, param("hl"));
     }
     return "<pre><code>\n" . $content . "\n</pre></code>";
