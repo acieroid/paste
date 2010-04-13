@@ -65,15 +65,15 @@ sub options_box {
 sub fill {
   if (param("paste")) {
     # write the content to a random file
-		my $path;
-		do {
-			$path = newpath;
-		} while (-e $path);
-		
+    my $path;
+    do {
+      $path = newpath;
+    } while (-e $path);
+
     open (FILE, '>', $path) or 
       return error ("Internal error", "Error when opening $path : $!");
     print FILE param("paste");
-		close FILE;
+    close FILE;
 
     my $url = $BASE_URL . "?id=" . basename($path);
     $url .= "&hl=" . param("hl") if (not (param("no-hl") eq "on"));
@@ -82,7 +82,7 @@ sub fill {
   }
   # View a paste
   elsif (param("id")) {
-	  my $path = $PASTES_PATH . param("id");
+    my $path = $PASTES_PATH . param("id");
     if (not -e $path) {
       return error "Wrong ID", "File doesn't exists : $path";
     }
