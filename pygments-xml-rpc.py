@@ -11,8 +11,7 @@ def highlight_code(code, lang):
   return highlight(code, get_lexer_by_name(lang), HtmlFormatter())
 
 def list_languages():
-  return sorted(map(lambda x: (x[0], x[1][0]), get_all_lexers()),
-                key=lambda x: x[0])
+  return map(lambda x: (x[0], x[1][0]), get_all_lexers())
 
 server = SimpleXMLRPCServer(("localhost", 8001))
 server.register_function(highlight_code)
