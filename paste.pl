@@ -2,7 +2,7 @@
 use strict;
 use CGI qw/:standard/;
 use File::Basename;
-use KateHighlighting;
+use PygmentsHighlighting;
 
 my $FILENAME_LENGTH=10;
 my $PASTES_PATH="pastes/";
@@ -18,7 +18,7 @@ sub randomchar {
 # create a random file path
 sub newpath {
   my $path = "$PASTES_PATH";
-  for (my $i = 0; $i < $FILENAME_LENGTH; $i++) {
+  for (my $i = 1; $i < $FILENAME_LENGTH; $i++) {
     $path .= randomchar;
   }
   return $path;
@@ -41,12 +41,20 @@ sub options_box {
   my @languages = languages();
   my $box = "<select name=\"hl\" size=\"1\">\n";
   foreach my $lang (@languages) {
-    $box .= "<option value=\"$lang\">$lang</option>\n";
+    if (ref $lang eq "ARRAY") {
+      $box .= "<option value=\"" . @{$lang}[1] . "\">" . 
+              @{$lang}[0] . "</option>\n";
+    }
+    else {
+      $box .= "<option value=\"$lang\">$lang</option>"
+    }
   }
   $box .= "</select>\n";
 
   # Disable highlight
-  $box .= checkbox(-name=>'no-hl', -label=>"No highlighting ");
+  $box .= checkbox(-name=>'no-hl', 
+                   -label=>"No highlighting ", 
+                   -checked=>1);
   
   # Disable html escaping
   $box .= checkbox(-name=>'no-escape', -label=>"No html escaping");
