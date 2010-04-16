@@ -101,7 +101,7 @@ sub fill {
       return error "Internal Error", "Error when opening : $path : $!";
     my $content;
     while (<FILE>) {
-      if (param "ne") {
+      if (param("ne")) {
         $content .= $_;
       }
       else {
@@ -109,7 +109,12 @@ sub fill {
       }
     }
     if (param("hl") and language_found(param("hl"))) {
-      $content = highlight($content, param("hl"));
+      if (param("ne") {
+        $content = highlight($content, param("hl"));
+      }
+      else
+        $content = highlight(unescapeHTML($content), param("hl"));
+      }
     }
     return "<pre><code>\n" . $content . "\n</pre></code>";
   }
