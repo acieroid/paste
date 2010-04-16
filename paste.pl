@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 use strict;
-use CGI qw/:standard/;
+use CGI qw/:standard unescapeHTML/;
 use File::Basename;
 use PygmentsHighlighting;
 
