@@ -109,10 +109,10 @@ sub fill {
       }
     }
     if (param("hl") and language_found(param("hl"))) {
-      if (param("ne") {
+      if (param("ne")) {
         $content = highlight($content, param("hl"));
       }
-      else
+      else {
         $content = highlight(unescapeHTML($content), param("hl"));
       }
     }
